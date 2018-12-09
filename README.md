@@ -1,7 +1,8 @@
 # icinga2-joomla-update
-Allows for monitoring whether an Joomla installation requires an update using Icinga2. I was looking for an Icinga to monitor our Joomla installations, but could not really find any plugins that matched our requirements. This repository is pretty much an extension of [this blog post](https://blog.pregos.info/2012/11/09/nagiosicinga-plugin-to-check-joomla-update-status-passive-check/) with the Shell Script and inspiration from [Nagios-WordPress-Update](https://github.com/jinjie/Nagios-WordPress-Update).
+Allows for monitoring whether a Joomla installation requires updates through an automated check in Icinga. I was looking for an Icinga plugin for monitoring our Joomla installations, but could not really find any plugins that matched our requirements. This repository is pretty much an extension of [this blog post](https://blog.pregos.info/2012/11/09/nagiosicinga-plugin-to-check-joomla-update-status-passive-check/) with the shell script and inspiration from [Nagios-WordPress-Update](https://github.com/jinjie/Nagios-WordPress-Update).
 
-To install:
+#### Installation Instructions
+
 - Upload the joomla-version.php at the root of your joomla installation
 - Adapt the `$allowed_ips` variable to fit your needs
 - Copy the check-joomla-update.sh to you nagis plugins folder
