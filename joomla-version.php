@@ -4,7 +4,7 @@ $allowed_ips = array(
         '127.0.0.1'
 );
 
-//if your Wordpress installation is behind a Proxy like Nginx use 'HTTP_X_FORWARDED_FOR'
+//if your Joomla installation is behind a proxy like Nginx or Apache, use 'HTTP_X_FORWARDED_FOR'
 if(isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         $remote_ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
 } else {
@@ -16,14 +16,14 @@ if (!in_array($remote_ip, $allowed_ips)){
         exit;
 }
 
-//access is allowed - set up the joomla platform
+//access is allowed - set up the Joomla platform
 define('_JEXEC', 1);
 include_once __DIR__ . '/defines.php';
 define('JPATH_BASE', __DIR__);
 require_once JPATH_BASE . '/includes/defines.php';
 require_once JPATH_BASE . '/includes/framework.php';
 
-//retrieve and compare the joomla version
+//retrieve and compare the Joomla version
 $joomla_version = new JVersion;
 $installed_version = $joomla_version->getShortVersion();
 
