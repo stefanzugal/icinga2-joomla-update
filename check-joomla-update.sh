@@ -1,0 +1,52 @@
+#!/bin/bash
+CURL=`which curl`
+CURL_OPTS='--user-agent check-joomla-updates-nagios-plugin --insecure'
+BASENAME=`which basename`
+PROGNAME=`$BASENAME $0`
+
+# Exit codes
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+function print_usage
+{
+        echo "Usage: $PROGNAME <URL>" 
+}
+
+if [ ! $1 ]; then
+        print_usage
+        exit $STATE_CRITICAL
+fi
+
+# Check that we're getting a 200 OK message for the joomla-version.php file on the remote host. 
+response=`$CURL $CURL_OPTS -I $1`
+if [[ ( $response != *"200 OK"* && $response != *"HTTP/2 200"* ) ]]; then
+        echo 'CRITICAL - Checker Script not installed on remote host'
+        exit $STATE_CRITICAL
+fi
+
+
+result=`$CURL $CURL_OPTS -s $1`
+
+if [ $? != 0 ]; then
+        echo 'CRITICAL - Check plugin does not work. Maybe you need to install curl.'
+        exit $STATE_CRITICAL
+else
+        status=`echo $result | cut -d\# -f1`
+        text=`echo $result | cut -d\# -f2`
+        echo "Joomla $status - $text"
+
+        case "$status" in
+                CRITICAL)
+                        exit $STATE_CRITICAL
+                        ;;
+                WARNING)
+                        exit $STATE_WARNING
+                        ;;
+                OK)
+                        exit $STATE_OK
+                        ;;
+        esac
+fi
