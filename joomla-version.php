@@ -16,28 +16,44 @@ if (!in_array($remote_ip, $allowed_ips)){
         exit;
 }
 
-//access is allowed - set up the Joomla platform
+//access is allowed - set up the joomla platform
 define('_JEXEC', 1);
 include_once __DIR__ . '/defines.php';
 define('JPATH_BASE', __DIR__);
 require_once JPATH_BASE . '/includes/defines.php';
 require_once JPATH_BASE . '/includes/framework.php';
 
-//retrieve and compare the Joomla version
+//check for joomla core updates
+//retrieve and compare the joomla version
 $joomla_version = new JVersion;
-$installed_version = $joomla_version->getShortVersion();
+$installed_joomla_version = $joomla_version->getShortVersion();
 
-// get remote Joomla version (last entry of "extension" list)
+// get remote Joomla Versio (last entry of "extension" list)
 $xml = simplexml_load_file('http://update.joomla.org/core/list.xml');
-$available_version = $xml->extension[$xml->extension->count()-1]['version'];
+$available_joomla_version = $xml->extension[$xml->extension->count()-1]['version'];
 
-//compare installed and availale version
+//check for joomla extensions updates
+Joomla\CMS\Factory::getApplication('site');
+$updater = new JUpdater;
+//parameters: check all sites, force reload of cache, 4 = stable only, do not include the current version in the results
+$updater->findUpdates(0, 0, 4, false);
+
+//query the database for extension updates
+$db = JFactory::getDbo();
+$query = $db->getQuery(true);
+$query->select('COUNT(*)');
+$query->from($db->quoteName('#__updates'));
+$query->where($db->quoteName('extension_id') . '!= 0');
+$db->setQuery($query);
+$extension_updates = $db->loadResult();
+
+//compare installed and available version
 $status = '';
 $text = '';
-if ($installed_version < $available_version) {
+if ($installed_joomla_version < $available_joomla_version) {
   $status = 'CRITICAL';
   $text = 'A newer version of Joomla is available - please update you Joomla installation';
-} else if ($installed_version == $available_version) {
+} else if ($installed_joomla_version == $available_joomla_version) {
   $status = 'OK';
   $text = 'Joomla is up to date';
 } else {
@@ -45,6 +61,12 @@ if ($installed_version < $available_version) {
   $text = 'It seems that the installed version of Joomla is newer than the current version - looks like something went wrong here (either the check or the Joomla installation)';
 }
 
-$text = $text . ': installed version: ' . $installed_version . ', newest version: ' . $available_version;
+//adapt the status according to the available extensions; use WARNING for extensions
+if ($extension_updates > 0 && $status == 'OK') {
+  $status = 'WARNING';
+}
+
+//assemble the information for icinga
+$text = $text . ': installed version: ' . $installed_joomla_version . ', newest version: ' . $available_joomla_version . '<br>Available extension updates: ' . $extension_updates;
 print $status . '#' . $text;
 ?>
