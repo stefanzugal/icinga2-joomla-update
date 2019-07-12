@@ -47,10 +47,16 @@ $query->where($db->quoteName('extension_id') . '!= 0');
 $db->setQuery($query);
 $extension_updates = $db->loadResult();
 
+// converts the version x.y.z to a number, assuming that neither y nor z will be larger than 99.
+function versionAsNumber($version) {
+  $tokens = preg_split('/\\./', $version);
+  return $tokens[0] * 10000 + $tokens[1] * 100 + $tokens[2];
+}
+
 //compare installed and available version
 $status = '';
 $text = '';
-if ($installed_joomla_version < $available_joomla_version) {
+if (versionAsNumber($installed_joomla_version) < versionAsNumber($available_joomla_version)) {
   $status = 'CRITICAL';
   $text = 'A newer version of Joomla is available - please update you Joomla installation';
 } else if ($installed_joomla_version == $available_joomla_version) {
